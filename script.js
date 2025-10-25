@@ -188,8 +188,6 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Event listener para el envío del formulario
     contactForm.addEventListener('submit', function(e) {
-        e.preventDefault(); // Prevenir el envío por defecto
-        
         // Limpiar errores anteriores
         clearErrors();
         
@@ -204,14 +202,30 @@ document.addEventListener('DOMContentLoaded', function() {
         const errors = validateForm(formData);
         
         if (errors.length > 0) {
+            e.preventDefault(); // Prevenir el envío si hay errores
             showErrors(errors);
         } else {
-            // Simular envío del formulario
-            console.log('Formulario enviado correctamente');
-            console.log('Datos del formulario:', formData);
+            // Mostrar mensaje de carga
+            const submitBtn = contactForm.querySelector('button[type="submit"]');
+            const originalText = submitBtn.textContent;
+            submitBtn.textContent = 'Enviando...';
+            submitBtn.disabled = true;
             
-            // Mostrar mensaje de éxito
-            showSuccess();
+            // El formulario se enviará automáticamente a Formspree
+            // Agregar un listener para el evento de envío exitoso
+            contactForm.addEventListener('formspree-success', function() {
+                showSuccess();
+                contactForm.reset();
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
+            });
+            
+            // Agregar un listener para errores de Formspree
+            contactForm.addEventListener('formspree-error', function() {
+                showErrors(['Error al enviar el mensaje. Por favor, inténtalo de nuevo.']);
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
+            });
         }
     });
     
